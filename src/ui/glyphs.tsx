@@ -103,3 +103,8 @@ const GLYPHS: Record<Glyph, GlyphComponent> = {
 };
 
 export const toGlyphComponent = (glyph: Glyph): GlyphComponent => GLYPHS[glyph];
+
+export const toGlyphElement = (glyph: Glyph) => {
+	const Component = GLYPHS[glyph];
+	return <Component width="1em" height="1em" aria-hidden />;
+};

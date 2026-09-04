@@ -1,5 +1,5 @@
 import { IconButton as AstryxIconButton } from '@astryxdesign/core/IconButton';
-import { type Glyph, toGlyphComponent } from './glyphs';
+import { type Glyph, toGlyphElement } from './glyphs';
 import { toVariant } from './internal/adapter';
 import type { Size, Tone } from './tokens';
 
@@ -22,12 +22,11 @@ export function IconButton({
 	isDisabled,
 	onPress,
 }: IconButtonProps) {
-	const GlyphComponent = toGlyphComponent(glyph);
 	return (
 		<AstryxIconButton
 			label={label}
 			tooltip={label}
-			icon={<GlyphComponent width="1em" height="1em" aria-hidden />}
+			icon={toGlyphElement(glyph)}
 			variant={toVariant(tone)}
 			size={size}
 			elevation={isRaised ? 'med' : 'none'}
