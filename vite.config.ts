@@ -1,14 +1,35 @@
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
-import { defineConfig } from 'vite'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { defineConfig, type Plugin } from 'vite'
 
-// https://vite.dev/config/
+const PRECACHE_PLACEHOLDER = '__BUILD_ASSETS__'
+
+function serviceWorker(): Plugin {
+  return {
+    name: 'hush-service-worker',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const assets = Object.keys(bundle)
+        .filter((fileName) => fileName !== 'index.html')
+        .map((fileName) => `./${fileName}`)
+      const source = readFileSync(fileURLToPath(new URL('./src/pwa/sw.js', import.meta.url)), 'utf8')
+
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sw.js',
+        source: source.replace(PRECACHE_PLACEHOLDER, JSON.stringify(assets)),
+      })
+    },
+  }
+}
+
 export default defineConfig({
-  // Served from https://leonidas95.github.io/hush/, so assets need the repo
-  // name as a prefix. Overridable for custom domains via BASE_PATH.
   base: process.env.BASE_PATH ?? '/hush/',
   plugins: [
     react(),
-    babel({ presets: [reactCompilerPreset()] })
+    babel({ presets: [reactCompilerPreset()] }),
+    serviceWorker(),
   ],
 })
