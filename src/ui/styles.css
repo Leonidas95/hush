@@ -1,0 +1,28 @@
+@import "@astryxdesign/core/reset.css";
+@import "@astryxdesign/core/astryx.css";
+@import "./themes/hush/hush.css";
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
+html,
+body {
+	height: 100%;
+}
+
+body {
+	background-color: var(--color-background-body);
+	color: var(--color-text-primary);
+	font-family: var(--font-family-body);
+
+	overscroll-behavior: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+body > :first-child {
+	height: 100%;
+	padding-top: env(safe-area-inset-top);
+	padding-right: env(safe-area-inset-right);
+	padding-bottom: env(safe-area-inset-bottom);
+	padding-left: env(safe-area-inset-left);
+	box-sizing: border-box;
+}

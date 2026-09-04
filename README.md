@@ -1,35 +1,74 @@
-# React + TypeScript + Vite
+# Hush
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An ambient sound mixer for the browser. Blend rain, waves, fire and a dozen other
+textures into a room to think in — then keep it, share it, or fall asleep to it.
 
-Currently, two official plugins are available:
+- **No account, no server.** Nothing you do here leaves the device.
+- **Installable.** A PWA that works with the network switched off.
+- **Nothing is downloaded.** Every sound is synthesised in the browser as you
+  listen (see [Sound](#sound)), so the whole app is a few hundred kilobytes and
+  the loops never repeat.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Sound
 
-## React Compiler
+There are no audio files. Each of the sixteen voices is a small Web Audio graph
+built from filtered noise and oscillators:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+| Voice | How it is made |
+| --- | --- |
+| Rain, Thunder | A broadband bed plus scattered drop bursts; thunder adds slow, low rolls with long tails |
+| Waves | A dark bed whose level and brightness rise together into each break, then draw back more slowly |
+| Stream | Bright, narrow water noise with a restless mid band and rising bubbles |
+| Wind, Leaves | A band whose centre wanders on a random walk, so gusts never arrive on a schedule |
+| Fire | A combustion bed under crackles a few milliseconds long |
+| Crickets, Birds, Café | Event voices: trills, phrased calls, and the mid-band roll of a full room |
+| Train, Fan | A low bed plus, respectively, the two-beat clack of a rail joint and a blade-rate ripple |
+| Chimes | Struck partials at deliberately inharmonic ratios, with long tails |
+| White / Pink / Brown noise | The three spectral colours, offered plainly |
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+Two details matter for quality:
 
-## Expanding the Oxlint configuration
+- **Seamless loops.** Looping raw noise clicks, because the last sample and the
+  first are unrelated. Each noise buffer is generated with a tail past the loop
+  point and crossfaded back over its head on an equal-power curve.
+- **Balanced levels.** The voices are built from different processes, so their
+  natural loudness varied by more than 30 dB — rain buried chimes at the same
+  slider position. Each voice carries a trim measured against rain, and the mix
+  bus ends in a limiter so stacking every sound at full level can only ever get
+  loud, never distort.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Structure
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- `apps/web` — the Hush application. Composes screens exclusively from
+  `@repo/ui` and ships no CSS of its own.
+  - `src/audio` — the mixer: noise generation, voices, and the engine that owns
+    the single `AudioContext`.
+  - `src/sounds` — the catalogue pairing presentation with a voice.
+  - `src/state` — the mix, presets, share links, and persistence.
+- `packages/ui` — the entire design surface, backed by Astryx. See its
+  `AGENTS.md`; the design system is confined to this package.
+- `packages/typescript-config` — shared TypeScript configurations.
+- `apps/api` — a NestJS service, unused by Hush and kept from the boilerplate.
+
+## Getting started
+
+```sh
+pnpm i --frozen-lockfile
+pnpm dev            # everything
+pnpm dev -F=web     # just Hush
+pnpm build
+pnpm lint           # biome + knip
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+> The repo pins `pnpm@11`. Installing with pnpm 9 produces a subtly broken
+> `node_modules` — some packages land without their dependencies, which breaks
+> the Astryx CLI and service-worker generation in ways that look unrelated. If
+> you hit that, `pnpm install --force` repairs it.
+
+## Tooling
+
+- **[Turborepo](https://turborepo.dev/)** — monorepo build orchestration.
+- **[Vite](https://vitejs.dev/)** + **[vite-plugin-pwa](https://vite-pwa-org.netlify.app/)** — bundling and the service worker.
+- **[Biome](https://biomejs.dev/)** — linting and formatting.
+- **[Knip](https://knip.dev/)** — dead code and dependency analysis.
+- **[Husky](https://typicode.github.io/husky/)** — pre-commit checks.
